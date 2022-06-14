@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView tvPhoneDesc;
     private FirebaseFirestore firestore;
     private FirebaseAuth mAuth;
-    private String phNumber,verificationId,authentication;
+    private String phNumber,verificationId,authentication,userType;
     private TextInputLayout edtNumber;
     private Button btnOTP,btnMovetoLogin;
     private ImageView imgMoveToRegistrationType;
@@ -47,6 +48,7 @@ public class RegisterActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
         countryCodePicker=findViewById(R.id.country_code_spinner);
         tvPhoneDesc=findViewById(R.id.label_desc);
         imgMoveToRegistrationType=findViewById(R.id.img_move_towards_registration_type);
@@ -67,10 +69,13 @@ public class RegisterActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
 
-            authentication=extras.getString("registrerType");
+            userType=extras.getString("userType");
 
             // and get whatever type user account id is
         }
+
+        selectedCountryCode=countryCodePicker.getSelectedCountryCodeWithPlus();
+        tvPhoneDesc.setText("Enter phone number without adding "+ selectedCountryCode);
 
         btnMovetoLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,37 +90,48 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                pd.show();
-
                 phNumber=selectedCountryCode+edtNumber.getEditText().getText().toString();
 
-                final FirebaseFirestore db = FirebaseFirestore.getInstance();
-                final DocumentReference docRef = db.collection("users").document(phNumber);
-                docRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(final DocumentSnapshot documentSnapshot) {
-                        if (documentSnapshot.exists()) {
-                            //redirect to home page
+                if (TextUtils.isEmpty(edtNumber.getEditText().getText())){
 
+                    edtNumber.setError("Enter Phone Number");
+
+                }else{
+
+                    pd.show();
+
+                    final FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    final DocumentReference docRef = db.collection("users").document(phNumber);
+                    docRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(final DocumentSnapshot documentSnapshot) {
+                            if (documentSnapshot.exists()) {
+                                //redirect to home page
+
+                                pd.dismiss();
+
+                                Toast.makeText(getApplicationContext(), "Your Account Has Already Been Created, Please Login!", Toast.LENGTH_SHORT).show();
+
+
+                            } else {
+
+                                //redirect to sign up page
+
+                                sendVerificationCode(phNumber);
+
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            Toast.makeText(getApplicationContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                             pd.dismiss();
 
-                            Toast.makeText(getApplicationContext(), "Your Account Has Already Been Created, Please Login!", Toast.LENGTH_SHORT).show();
-
-
-                        } else {
-
-                            //redirect to sign up page
-
-                            sendVerificationCode(phNumber);
-
                         }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
+                    });
 
-                    }
-                });
+                }
 
 
             }
@@ -125,8 +141,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                Intent moveTowardsRegistrationType=new Intent(getApplicationContext(),RegistrationTypeActivity.class);
-                startActivity(moveTowardsRegistrationType);
+             onBackPressed();
 
             }
         });
@@ -177,7 +192,8 @@ public class RegisterActivity extends AppCompatActivity {
             verificationId = s;
             Intent intent=new Intent(RegisterActivity.this, OTPActivity.class);
             intent.putExtra("phoneNumber",phNumber);
-            intent.putExtra("registrerType",authentication);
+            intent.putExtra("userType",userType);
+            intent.putExtra("authenticationType","register");
             intent.putExtra("verificationId",verificationId);
             startActivity(intent);
         }
@@ -191,7 +207,8 @@ public class RegisterActivity extends AppCompatActivity {
         @Override
         public void onVerificationFailed(@NonNull FirebaseException e) {
 
-            Toast.makeText(getApplicationContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), ""+e.getMessage(), Toast.LENGTH_LONG).show();
+            pd.dismiss();
         }
     };
 }

@@ -147,18 +147,18 @@ public class RegistrationTypeActivity extends AppCompatActivity {
                 }else if(type.equals("consumer")){
 
                     Intent moveConsumerRegistration=new Intent(getApplicationContext(),RegisterActivity.class);
-                    moveConsumerRegistration.putExtra("registrerType",type);
+                    moveConsumerRegistration.putExtra("userType",type);
                     startActivity(moveConsumerRegistration);
-                    finish();
+                  //  finish();
                 }
 
 
                 else if(type.equals("partner")){
 
                     Intent moveConsumerRegistration=new Intent(getApplicationContext(),RegisterActivity.class);
-                    moveConsumerRegistration.putExtra("registrerType",type);
+                    moveConsumerRegistration.putExtra("userType",type);
                     startActivity(moveConsumerRegistration);
-                    finish();
+                    //finish();
                 }
 
 
@@ -170,7 +170,6 @@ public class RegistrationTypeActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 Intent moveToLogin=new Intent(getApplicationContext(),LoginActivity.class);
-
                 startActivity(moveToLogin);
 
             }
