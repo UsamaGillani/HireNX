@@ -214,7 +214,6 @@ public class PartnerProfileSetup2Activity extends AppCompatActivity {
 
     private void UploadImageTofirebase(String name, Uri contentUri) {
 
-
         final StorageReference filepath = mStorage.child(Storage_Path + name);
         filepath.putFile(contentUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -431,7 +430,7 @@ public class PartnerProfileSetup2Activity extends AppCompatActivity {
         }
     }
 
-
+    @NonNull
     private File createImageFile() throws IOException {
 // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
